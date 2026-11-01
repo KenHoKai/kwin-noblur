@@ -1,0 +1,6 @@
+/src/
+/pkg/
+/kwin-*.tar.*
+/kwin-*.tar.*.sig
+/*.pkg.tar*
+/*.log

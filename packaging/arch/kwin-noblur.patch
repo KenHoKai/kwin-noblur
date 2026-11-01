@@ -1,0 +1,344 @@
+diff --git a/src/plugins/overview/DesktopBar.qml b/src/plugins/overview/DesktopBar.qml
+index fc004f6494..60b8d9b153 100644
+--- a/src/plugins/overview/DesktopBar.qml
++++ b/src/plugins/overview/DesktopBar.qml
+@@ -10,6 +10,7 @@ import QtQuick.Controls
+ import QtQuick.Layouts
+ import Qt5Compat.GraphicalEffects
+ import org.kde.kirigami as Kirigami
++import org.kde.kirigami.primitives as KirigamiPrimitives
+ import org.kde.kwin as KWinComponents
+ import org.kde.kwin.private.effects
+ import org.kde.plasma.components as PC3
+@@ -29,6 +30,8 @@ Item {
+     property alias desktopModel: desktopRepeater.model
+     property QtObject selectedDesktop: null
+     property var heap
++    property bool showPreviews: false
++    property bool showShadow: true
+ 
+     implicitHeight: columnHeight + 2 * Kirigami.Units.smallSpacing
+     implicitWidth: columnWidth + 2 * Kirigami.Units.smallSpacing
+@@ -108,6 +111,7 @@ Item {
+ 
+                         DesktopView {
+                             id: thumbnail
++                            visible: bar.showPreviews
+ 
+                             width: targetScreen.geometry.width
+                             height: targetScreen.geometry.height
+@@ -130,12 +134,18 @@ Item {
+                             }
+                         }
+ 
+-                        Rectangle {
++                        KirigamiPrimitives.ShadowedRectangle {
+                             anchors.fill: parent
+                             radius: Kirigami.Units.cornerRadius
+                             color: "transparent"
+                             border.width: 1
+                             border.color: highlight.visible ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
++
++                            shadow {
++                                size: bar.showShadow ? 18 : 0
++                                color: Qt.rgba(0, 0, 0, 0.3)
++                                yOffset: 3
++                            }
+                         }
+ 
+                         Highlight {
+diff --git a/src/plugins/overview/DesktopView.qml b/src/plugins/overview/DesktopView.qml
+index 7f5eafea75..7732edd33b 100644
+--- a/src/plugins/overview/DesktopView.qml
++++ b/src/plugins/overview/DesktopView.qml
+@@ -18,6 +18,7 @@ Item {
+             activity: KWinComponents.Workspace.currentActivity
+             desktop: desktopView.desktop
+             screenName: targetScreen.name
++            windowType: ~KWinComponents.WindowFilterModel.Desktop
+             windowModel: desktopView.windowModel
+         }
+ 
+diff --git a/src/plugins/overview/Main.qml b/src/plugins/overview/Main.qml
+index 74b2013b54..54e362d6db 100644
+--- a/src/plugins/overview/Main.qml
++++ b/src/plugins/overview/Main.qml
+@@ -16,6 +16,7 @@ import org.kde.milou as Milou
+ import org.kde.plasma.components as PC3
+ import org.kde.plasma.extras as PlasmaExtras
+ import org.kde.kcmutils as KCM
++import org.kde.kirigami.primitives as KirigamiPrimitives
+ 
+ FocusScope {
+     id: container
+@@ -305,14 +306,14 @@ FocusScope {
+         FastBlur {
+             anchors.fill: parent
+             source: backgroundItem
+-            radius: 64
++            radius: effect.blurBackground ? 64 : 0
+         }
+     }
+ 
+     Rectangle {
+         id: underlay
+         anchors.fill: parent
+-        opacity: 0.7
++        opacity: effect.dimBackground ? 0.7 : 0.0
+         color: Kirigami.Theme.backgroundColor
+ 
+         TapHandler {
+@@ -348,6 +349,8 @@ FocusScope {
+             desktopModel: desktopModel
+             verticalDesktopBar: container.verticalDesktopBar
+             selectedDesktop: currentDesktop
++            showPreviews: effect.showDesktopBarPreviews
++            showShadow: effect.showDesktopBarShadow
+             heap: allDesktopHeaps.currentHeap
+         }
+     }
+@@ -562,22 +565,43 @@ FocusScope {
+                     height: parent.height * (1 + (sizeAdjust - 1) * overviewVal)
+                     x: parent.width / 2 - width / 2
+                     y: parent.height / 2 - height / 2
+-                    KWinComponents.DesktopBackground {
++
++
++                                        KWinComponents.DesktopBackground {
+                         id: desktopElement
++                        visible: effect.showDesktopPreviewBackground
+                         anchors.fill: parent
+                         anchors.margins: gridVal !== 0 ? Math.round(mainBackground.current * gridVal * (1.5 / gridScale.xScale)) : 0
+                         activity: KWinComponents.Workspace.currentActivity
+                         desktop: currentDesktop
+                         outputName: targetScreen.name
+-                        visible: false
+                     }
+ 
+-                    Kirigami.ShadowedTexture {
++Kirigami.ShadowedTexture {
+                         anchors.fill: parent
++                        visible: effect.showDesktopPreviewBackground
+ 
+                         color: "transparent"
+                         source: desktopElement
++                        radius: Kirigami.Units.cornerRadius * (overviewVal + gridVal * 2)
++
++                        shadow {
++                            size: Kirigami.Units.gridUnit * 2
++                            color: Qt.rgba(0, 0, 0, 0.3)
++                            yOffset: 3
++                        }
+ 
++                        property var borderWidth: desktopHover.hovered ? Kirigami.Units.largeSpacing : (mainBackground.current ? Kirigami.Units.smallSpacing : 0);
++                        property var borderColor: desktopHover.hovered ? Kirigami.Theme.focusColor : (mainBackground.current ? Kirigami.Theme.highlightColor : "transparent")
++                        border.width: gridVal == 1 ? borderWidth : 0
++                        border.color: gridVal == 1 ? borderColor : "transparent"
++                    }
++
++KirigamiPrimitives.ShadowedRectangle {
++                        anchors.fill: parent
++                        visible: !effect.showDesktopPreviewBackground
++
++                        color: "transparent"
+                         radius: Kirigami.Units.cornerRadius * (overviewVal + gridVal * 2)
+ 
+                         shadow {
+diff --git a/src/plugins/overview/kcm/overvieweffectkcm.ui b/src/plugins/overview/kcm/overvieweffectkcm.ui
+index cdc4f47dae..ae1c15d111 100644
+--- a/src/plugins/overview/kcm/overvieweffectkcm.ui
++++ b/src/plugins/overview/kcm/overvieweffectkcm.ui
+@@ -12,7 +12,7 @@
+     <x>0</x>
+     <y>0</y>
+     <width>455</width>
+-    <height>201</height>
++    <height>330</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+@@ -58,7 +58,77 @@
+      </property>
+     </widget>
+    </item>
+-   <item row="3" column="0" colspan="2">
++   <item row="3" column="0">
++    <widget class="QLabel" name="label_BlurBackground">
++     <property name="text">
++      <string>Blur the background:</string>
++     </property>
++    </widget>
++   </item>
++   <item row="3" column="1">
++    <widget class="QCheckBox" name="kcfg_BlurBackground">
++     <property name="text">
++      <string/>
++     </property>
++    </widget>
++   </item>
++   <item row="4" column="0">
++    <widget class="QLabel" name="label_DimBackground">
++     <property name="text">
++      <string>Dim the background:</string>
++     </property>
++    </widget>
++   </item>
++   <item row="4" column="1">
++    <widget class="QCheckBox" name="kcfg_DimBackground">
++     <property name="text">
++      <string/>
++     </property>
++    </widget>
++   </item>
++   <item row="5" column="0">
++    <widget class="QLabel" name="label_ShowDesktopBarPreviews">
++     <property name="text">
++      <string>Show desktop previews:</string>
++     </property>
++    </widget>
++   </item>
++   <item row="5" column="1">
++    <widget class="QCheckBox" name="kcfg_ShowDesktopBarPreviews">
++     <property name="text">
++      <string/>
++     </property>
++    </widget>
++   </item>
++   <item row="6" column="0">
++    <widget class="QLabel" name="label_ShowDesktopBarShadow">
++     <property name="text">
++      <string>Show desktop preview shadows:</string>
++     </property>
++    </widget>
++   </item>
++   <item row="6" column="1">
++    <widget class="QCheckBox" name="kcfg_ShowDesktopBarShadow">
++     <property name="text">
++      <string/>
++     </property>
++    </widget>
++   </item>
++      <item row="7" column="0">
++    <widget class="QLabel" name="label_ShowDesktopPreviewBackground">
++     <property name="text">
++      <string>Show desktop preview background:</string>
++     </property>
++    </widget>
++   </item>
++   <item row="7" column="1">
++    <widget class="QCheckBox" name="kcfg_ShowDesktopPreviewBackground">
++     <property name="text">
++      <string/>
++     </property>
++    </widget>
++   </item>
++<item row="8" column="0" colspan="2">
+     <widget class="KShortcutsEditor" name="shortcutsEditor">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+diff --git a/src/plugins/overview/overviewconfig.kcfg b/src/plugins/overview/overviewconfig.kcfg
+index ab450a85bc..322e8e2b5d 100644
+--- a/src/plugins/overview/overviewconfig.kcfg
++++ b/src/plugins/overview/overviewconfig.kcfg
+@@ -20,6 +20,22 @@
+             <default>true</default>
+         </entry>
+ 
++        <entry name="BlurBackground" type="bool">
++            <default>false</default>
++        </entry>
++        <entry name="DimBackground" type="bool">
++            <default>false</default>
++        </entry>
++        <entry name="ShowDesktopBarPreviews" type="bool">
++            <default>false</default>
++        </entry>
++        <entry name="ShowDesktopBarShadow" type="bool">
++            <default>true</default>
++        </entry>
++        <entry name="ShowDesktopPreviewBackground" type="bool">
++            <default>false</default>
++        </entry>
++
+         <entry name="BorderActivate" type="IntList">
+             <default>ElectricTopLeft</default>
+         </entry>
+diff --git a/src/plugins/overview/overvieweffect.cpp b/src/plugins/overview/overvieweffect.cpp
+index d50cbaef6e..40b2f01702 100644
+--- a/src/plugins/overview/overvieweffect.cpp
++++ b/src/plugins/overview/overvieweffect.cpp
+@@ -181,6 +181,7 @@ OverviewEffect::~OverviewEffect()
+ void OverviewEffect::reconfigure(ReconfigureFlags)
+ {
+     OverviewConfig::self()->read();
++    Q_EMIT appearanceChanged();
+     setAnimationDuration(animationTime(300ms).count());
+     setFilterWindows(OverviewConfig::filterWindows());
+ 
+@@ -285,6 +286,31 @@ bool OverviewEffect::organizedGrid() const
+     return OverviewConfig::organizedGrid();
+ }
+ 
++bool OverviewEffect::blurBackground() const
++{
++    return OverviewConfig::blurBackground();
++}
++
++bool OverviewEffect::dimBackground() const
++{
++    return OverviewConfig::dimBackground();
++}
++
++bool OverviewEffect::showDesktopBarPreviews() const
++{
++    return OverviewConfig::showDesktopBarPreviews();
++}
++
++bool OverviewEffect::showDesktopBarShadow() const
++{
++    return OverviewConfig::showDesktopBarShadow();
++}
++
++bool OverviewEffect::showDesktopPreviewBackground() const
++{
++    return OverviewConfig::showDesktopPreviewBackground();
++}
++
+ qreal OverviewEffect::gestureThreshold() const
+ {
+     return 0.10;
+diff --git a/src/plugins/overview/overvieweffect.h b/src/plugins/overview/overvieweffect.h
+index cb21cda839..5a878b5c62 100644
+--- a/src/plugins/overview/overvieweffect.h
++++ b/src/plugins/overview/overvieweffect.h
+@@ -17,6 +17,11 @@ class VirtualDesktop;
+ class OverviewEffect : public QuickSceneEffect
+ {
+     Q_OBJECT
++    Q_PROPERTY(bool blurBackground READ blurBackground NOTIFY appearanceChanged)
++    Q_PROPERTY(bool dimBackground READ dimBackground NOTIFY appearanceChanged)
++    Q_PROPERTY(bool showDesktopBarPreviews READ showDesktopBarPreviews NOTIFY appearanceChanged)
++    Q_PROPERTY(bool showDesktopBarShadow READ showDesktopBarShadow NOTIFY appearanceChanged)
++    Q_PROPERTY(bool showDesktopPreviewBackground READ showDesktopPreviewBackground NOTIFY appearanceChanged)
+     Q_PROPERTY(int animationDuration READ animationDuration NOTIFY animationDurationChanged)
+     Q_PROPERTY(bool ignoreMinimized READ ignoreMinimized NOTIFY ignoreMinimizedChanged)
+     Q_PROPERTY(bool filterWindows READ filterWindows NOTIFY filterWindowsChanged)
+@@ -37,6 +42,11 @@ public:
+ 
+     bool ignoreMinimized() const;
+     bool organizedGrid() const;
++    bool blurBackground() const;
++    bool dimBackground() const;
++    bool showDesktopBarPreviews() const;
++    bool showDesktopBarShadow() const;
++    bool showDesktopPreviewBackground() const;
+     qreal gestureThreshold() const;
+ 
+     bool filterWindows() const;
+@@ -71,6 +81,7 @@ Q_SIGNALS:
+     void ignoreMinimizedChanged();
+     void filterWindowsChanged();
+     void organizedGridChanged();
++    void appearanceChanged();
+     void desktopOffsetChanged(KWin::LogicalOutput *screen);
+     void searchTextChanged();

@@ -1,0 +1,18 @@
+version = 1
+
+[[annotations]]
+path = [
+    "PKGBUILD",
+    ".SRCINFO",
+    "README.md",
+    ".gitignore",
+]
+SPDX-FileCopyrightText = "2026 KenHokai"
+SPDX-License-Identifier = "0BSD"
+
+[[annotations]]
+path = [
+    "kwin-noblur.patch",
+]
+SPDX-FileCopyrightText = "2026 KenHokai"
+SPDX-License-Identifier = "0BSD"
