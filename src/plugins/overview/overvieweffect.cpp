@@ -181,6 +181,7 @@ OverviewEffect::~OverviewEffect()
 void OverviewEffect::reconfigure(ReconfigureFlags)
 {
     OverviewConfig::self()->read();
+    Q_EMIT appearanceChanged();
     setAnimationDuration(animationTime(300ms).count());
     setFilterWindows(OverviewConfig::filterWindows());
 
@@ -283,6 +284,31 @@ bool OverviewEffect::ignoreMinimized() const
 bool OverviewEffect::organizedGrid() const
 {
     return OverviewConfig::organizedGrid();
+}
+
+bool OverviewEffect::blurBackground() const
+{
+    return OverviewConfig::blurBackground();
+}
+
+bool OverviewEffect::dimBackground() const
+{
+    return OverviewConfig::dimBackground();
+}
+
+bool OverviewEffect::showDesktopBarPreviews() const
+{
+    return OverviewConfig::showDesktopBarPreviews();
+}
+
+bool OverviewEffect::showDesktopBarShadow() const
+{
+    return OverviewConfig::showDesktopBarShadow();
+}
+
+bool OverviewEffect::showDesktopPreviewBackground() const
+{
+    return OverviewConfig::showDesktopPreviewBackground();
 }
 
 qreal OverviewEffect::gestureThreshold() const

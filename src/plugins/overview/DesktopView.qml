@@ -18,6 +18,7 @@ Item {
             activity: KWinComponents.Workspace.currentActivity
             desktop: desktopView.desktop
             screenName: targetScreen.name
+            windowType: ~KWinComponents.WindowFilterModel.Desktop
             windowModel: desktopView.windowModel
         }
 

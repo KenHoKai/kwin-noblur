@@ -20,6 +20,22 @@
             <default>true</default>
         </entry>
 
+        <entry name="BlurBackground" type="bool">
+            <default>false</default>
+        </entry>
+        <entry name="DimBackground" type="bool">
+            <default>false</default>
+        </entry>
+        <entry name="ShowDesktopBarPreviews" type="bool">
+            <default>false</default>
+        </entry>
+        <entry name="ShowDesktopBarShadow" type="bool">
+            <default>true</default>
+        </entry>
+        <entry name="ShowDesktopPreviewBackground" type="bool">
+            <default>false</default>
+        </entry>
+
         <entry name="BorderActivate" type="IntList">
             <default>ElectricTopLeft</default>
         </entry>

@@ -16,6 +16,7 @@ import org.kde.milou as Milou
 import org.kde.plasma.components as PC3
 import org.kde.plasma.extras as PlasmaExtras
 import org.kde.kcmutils as KCM
+import org.kde.kirigami.primitives as KirigamiPrimitives
 
 FocusScope {
     id: container
@@ -305,14 +306,14 @@ FocusScope {
         FastBlur {
             anchors.fill: parent
             source: backgroundItem
-            radius: 64
+            radius: effect.blurBackground ? 64 : 0
         }
     }
 
     Rectangle {
         id: underlay
         anchors.fill: parent
-        opacity: 0.7
+        opacity: effect.dimBackground ? 0.7 : 0.0
         color: Kirigami.Theme.backgroundColor
 
         TapHandler {
@@ -348,6 +349,8 @@ FocusScope {
             desktopModel: desktopModel
             verticalDesktopBar: container.verticalDesktopBar
             selectedDesktop: currentDesktop
+            showPreviews: effect.showDesktopBarPreviews
+            showShadow: effect.showDesktopBarShadow
             heap: allDesktopHeaps.currentHeap
         }
     }
@@ -562,22 +565,43 @@ FocusScope {
                     height: parent.height * (1 + (sizeAdjust - 1) * overviewVal)
                     x: parent.width / 2 - width / 2
                     y: parent.height / 2 - height / 2
-                    KWinComponents.DesktopBackground {
+
+
+                                        KWinComponents.DesktopBackground {
                         id: desktopElement
+                        visible: effect.showDesktopPreviewBackground
                         anchors.fill: parent
                         anchors.margins: gridVal !== 0 ? Math.round(mainBackground.current * gridVal * (1.5 / gridScale.xScale)) : 0
                         activity: KWinComponents.Workspace.currentActivity
                         desktop: currentDesktop
                         outputName: targetScreen.name
-                        visible: false
                     }
 
-                    Kirigami.ShadowedTexture {
+Kirigami.ShadowedTexture {
                         anchors.fill: parent
+                        visible: effect.showDesktopPreviewBackground
 
                         color: "transparent"
                         source: desktopElement
+                        radius: Kirigami.Units.cornerRadius * (overviewVal + gridVal * 2)
 
+                        shadow {
+                            size: Kirigami.Units.gridUnit * 2
+                            color: Qt.rgba(0, 0, 0, 0.3)
+                            yOffset: 3
+                        }
+
+                        property var borderWidth: desktopHover.hovered ? Kirigami.Units.largeSpacing : (mainBackground.current ? Kirigami.Units.smallSpacing : 0);
+                        property var borderColor: desktopHover.hovered ? Kirigami.Theme.focusColor : (mainBackground.current ? Kirigami.Theme.highlightColor : "transparent")
+                        border.width: gridVal == 1 ? borderWidth : 0
+                        border.color: gridVal == 1 ? borderColor : "transparent"
+                    }
+
+KirigamiPrimitives.ShadowedRectangle {
+                        anchors.fill: parent
+                        visible: !effect.showDesktopPreviewBackground
+
+                        color: "transparent"
                         radius: Kirigami.Units.cornerRadius * (overviewVal + gridVal * 2)
 
                         shadow {

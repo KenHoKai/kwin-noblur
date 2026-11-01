@@ -10,6 +10,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import org.kde.kirigami as Kirigami
+import org.kde.kirigami.primitives as KirigamiPrimitives
 import org.kde.kwin as KWinComponents
 import org.kde.kwin.private.effects
 import org.kde.plasma.components as PC3
@@ -29,6 +30,8 @@ Item {
     property alias desktopModel: desktopRepeater.model
     property QtObject selectedDesktop: null
     property var heap
+    property bool showPreviews: false
+    property bool showShadow: true
 
     implicitHeight: columnHeight + 2 * Kirigami.Units.smallSpacing
     implicitWidth: columnWidth + 2 * Kirigami.Units.smallSpacing
@@ -108,6 +111,7 @@ Item {
 
                         DesktopView {
                             id: thumbnail
+                            visible: bar.showPreviews
 
                             width: targetScreen.geometry.width
                             height: targetScreen.geometry.height
@@ -130,12 +134,18 @@ Item {
                             }
                         }
 
-                        Rectangle {
+                        KirigamiPrimitives.ShadowedRectangle {
                             anchors.fill: parent
                             radius: Kirigami.Units.cornerRadius
                             color: "transparent"
                             border.width: 1
                             border.color: highlight.visible ? Kirigami.Theme.highlightColor : Kirigami.Theme.textColor
+
+                            shadow {
+                                size: bar.showShadow ? 18 : 0
+                                color: Qt.rgba(0, 0, 0, 0.3)
+                                yOffset: 3
+                            }
                         }
 
                         Highlight {

@@ -17,6 +17,11 @@ class VirtualDesktop;
 class OverviewEffect : public QuickSceneEffect
 {
     Q_OBJECT
+    Q_PROPERTY(bool blurBackground READ blurBackground NOTIFY appearanceChanged)
+    Q_PROPERTY(bool dimBackground READ dimBackground NOTIFY appearanceChanged)
+    Q_PROPERTY(bool showDesktopBarPreviews READ showDesktopBarPreviews NOTIFY appearanceChanged)
+    Q_PROPERTY(bool showDesktopBarShadow READ showDesktopBarShadow NOTIFY appearanceChanged)
+    Q_PROPERTY(bool showDesktopPreviewBackground READ showDesktopPreviewBackground NOTIFY appearanceChanged)
     Q_PROPERTY(int animationDuration READ animationDuration NOTIFY animationDurationChanged)
     Q_PROPERTY(bool ignoreMinimized READ ignoreMinimized NOTIFY ignoreMinimizedChanged)
     Q_PROPERTY(bool filterWindows READ filterWindows NOTIFY filterWindowsChanged)
@@ -37,6 +42,11 @@ public:
 
     bool ignoreMinimized() const;
     bool organizedGrid() const;
+    bool blurBackground() const;
+    bool dimBackground() const;
+    bool showDesktopBarPreviews() const;
+    bool showDesktopBarShadow() const;
+    bool showDesktopPreviewBackground() const;
     qreal gestureThreshold() const;
 
     bool filterWindows() const;
@@ -71,6 +81,7 @@ Q_SIGNALS:
     void ignoreMinimizedChanged();
     void filterWindowsChanged();
     void organizedGridChanged();
+    void appearanceChanged();
     void desktopOffsetChanged(KWin::LogicalOutput *screen);
     void searchTextChanged();
 
