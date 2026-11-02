@@ -1,7 +1,7 @@
 pkgbase = kwin-noblur
 	pkgdesc = KWin with configurable Overview appearance options
 	pkgver = 6.8.2
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/KenHoKai/kwin-noblur
 	arch = x86_64
 	groups = plasma
@@ -90,6 +90,6 @@ pkgbase = kwin-noblur
 	validpgpkeys = 1FA881591C26B276D7A5518EEAAF29B42A678C20
 	sha256sums = ea5e68d957c7d70abed97222a592d4445fda29129e20942658badd224ee138b4
 	sha256sums = SKIP
-	sha256sums = ac59b604d934bb6c5b564a6bf45cb8ea12a0f739e18f4688a962921e2fa46d82
+	sha256sums = 64b8cc3ec0ca7e5cb9c7e13f6288edcd155165b5d663a1718ee085bac5c3fd7f
 
 pkgname = kwin-noblur

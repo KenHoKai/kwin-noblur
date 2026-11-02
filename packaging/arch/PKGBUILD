@@ -8,7 +8,7 @@ pkgname=kwin-noblur
 _pkgname=kwin
 pkgver=6.8.2
 _dirver=$(echo $pkgver | cut -d. -f1-3)
-pkgrel=1
+pkgrel=2
 pkgdesc='KWin with configurable Overview appearance options'
 arch=(x86_64)
 provides=("kwin=${pkgver}")
@@ -103,7 +103,7 @@ source=(
 )
 sha256sums=('ea5e68d957c7d70abed97222a592d4445fda29129e20942658badd224ee138b4'
             'SKIP'
-            'ac59b604d934bb6c5b564a6bf45cb8ea12a0f739e18f4688a962921e2fa46d82')
+            '64b8cc3ec0ca7e5cb9c7e13f6288edcd155165b5d663a1718ee085bac5c3fd7f')
 validpgpkeys=('E0A3EB202F8E57528E13E72FD7574483BB57B18D'  # Jonathan Esk-Riddell <jr@jriddell.org>
               '0AAC775BB6437A8D9AF7A3ACFE0784117FBCE11D'  # Bhushan Shah <bshah@kde.org>
               'D07BD8662C56CB291B316EB2F5675605C74E02CF'  # David Edmundson <davidedmundson@kde.org>
