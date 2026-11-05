@@ -484,13 +484,13 @@ void GLVertexBuffer::setAttribLayout(std::span<const GLVertexAttrib> attribs, si
 
 void GLVertexBuffer::render(GLenum primitiveMode)
 {
-    render(Region::infinite(), primitiveMode, false);
+    render(Region::infinite(), primitiveMode);
 }
 
-void GLVertexBuffer::render(const Region &region, GLenum primitiveMode, bool hardwareClipping)
+void GLVertexBuffer::render(const Region &region, GLenum primitiveMode)
 {
     d->bindArrays();
-    draw(region, primitiveMode, 0, d->vertexCount, hardwareClipping);
+    draw(region, primitiveMode, 0, d->vertexCount);
     d->unbindArrays();
 }
 
@@ -506,40 +506,25 @@ void GLVertexBuffer::unbindArrays()
 
 void GLVertexBuffer::draw(GLenum primitiveMode, int first, int count)
 {
-    draw(Region::infinite(), primitiveMode, first, count, false);
+    draw(Region::infinite(), primitiveMode, first, count);
 }
 
-void GLVertexBuffer::draw(const Region &region, GLenum primitiveMode, int first, int count, bool hardwareClipping)
+void GLVertexBuffer::draw(const Region &region, GLenum primitiveMode, int first, int count)
 {
     if (primitiveMode == GL_QUADS) {
         EglContext::currentContext()->indexBuffer()->bind();
         EglContext::currentContext()->indexBuffer()->accommodate(count / 4);
 
         count = count * 6 / 4;
-
-        if (!hardwareClipping) {
+        EglContext::currentContext()->renderRegion(region, [&]() {
             glDrawElementsBaseVertex(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, nullptr, first);
-        } else {
-            // Clip using scissoring
-            const GLFramebuffer *current = GLFramebuffer::currentFramebuffer();
-            for (const Rect &r : region.rects()) {
-                glScissor(r.x(), current->size().height() - (r.y() + r.height()), r.width(), r.height());
-                glDrawElementsBaseVertex(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, nullptr, first);
-            }
-        }
+        });
         return;
     }
 
-    if (!hardwareClipping) {
+    EglContext::currentContext()->renderRegion(region, [&]() {
         glDrawArrays(primitiveMode, first, count);
-    } else {
-        // Clip using scissoring
-        const GLFramebuffer *current = GLFramebuffer::currentFramebuffer();
-        for (const Rect &r : region.rects()) {
-            glScissor(r.x(), current->size().height() - (r.y() + r.height()), r.width(), r.height());
-            glDrawArrays(primitiveMode, first, count);
-        }
-    }
+    });
 }
 
 void GLVertexBuffer::reset()

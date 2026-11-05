@@ -1,7 +1,7 @@
 # translation of kcmkwm.po to Slovenian
 # Translation of kcmkwm.po to Slovenian
 # KDEBASE translation to Slovenian language.
-# $Id: kcmkwm.po 1741383 2026-07-15 01:29:34Z scripty $
+# $Id: kcmkwm.po 1751927 2026-11-04 01:48:01Z scripty $
 # $Source$
 #
 # Copyright (C) 2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kcmkwm\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-07-14 00:45+0000\n"
-"PO-Revision-Date: 2026-07-14 11:34+0200\n"
+"POT-Creation-Date: 2026-11-03 00:56+0000\n"
+"PO-Revision-Date: 2026-11-03 07:26+0100\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n"
 "%100==4 ? 3 : 0);\n"
 "Translator: Andrej Mernik <andrejm@ubuntu.si>\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
 
 #: ui/Focus.qml:22
 #, kde-format
@@ -233,14 +233,14 @@ msgid "Screen &edge snap zone:"
 msgstr "Območj&e pripenjanja na obrobo:"
 
 #: ui/MovementAndPlacement.qml:30 ui/MovementAndPlacement.qml:58
-#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:183
+#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:199
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "%1 px"
 msgstr "%1 px"
 
 #: ui/MovementAndPlacement.qml:34 ui/MovementAndPlacement.qml:62
-#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:187
+#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:203
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "px"
@@ -310,38 +310,105 @@ msgstr "Pod miško"
 #: ui/MovementAndPlacement.qml:149
 #, kde-format
 msgctxt "@title:group"
-msgid "Picture-in-picture Placement"
-msgstr "Postavitev slika-v-sliki"
+msgid "Overlay Positioning"
+msgstr "Pozicioniranje prekrivnega elementa"
 
 #: ui/MovementAndPlacement.qml:152
 #, kde-format
-msgid "Open in screen corner:"
-msgstr "Odpri v kotu zaslona:"
+msgctxt "@label:chooser"
+msgid "OSD popups:"
+msgstr "Pojavna okna OSD:"
 
-#: ui/MovementAndPlacement.qml:157
+#: ui/MovementAndPlacement.qml:167
+#, kde-format
+msgctxt "@label:chooser"
+msgid "Picture-in-picture:"
+msgstr "Slika-v-sliki:"
+
+#: ui/MovementAndPlacement.qml:172
 #, kde-format
 msgid "Top-left"
 msgstr "Zgoraj levo"
 
-#: ui/MovementAndPlacement.qml:158
+#: ui/MovementAndPlacement.qml:173
 #, kde-format
 msgid "Top-right"
 msgstr "Zgoraj desno"
 
-#: ui/MovementAndPlacement.qml:159
+#: ui/MovementAndPlacement.qml:174
 #, kde-format
 msgid "Bottom-left"
 msgstr "Spodaj levo"
 
-#: ui/MovementAndPlacement.qml:160
+#: ui/MovementAndPlacement.qml:175
 #, kde-format
 msgid "Bottom-right"
 msgstr "Spodaj desno"
 
-#: ui/MovementAndPlacement.qml:173
+#: ui/MovementAndPlacement.qml:189
 #, kde-format
 msgid "Margin:"
 msgstr "Rob:"
+
+#: ui/OnScreenDisplayPositionSelector.qml:80
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-left"
+msgstr "Vrh levo"
+
+#: ui/OnScreenDisplayPositionSelector.qml:85
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-center"
+msgstr "Vrh center"
+
+#: ui/OnScreenDisplayPositionSelector.qml:90
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-right"
+msgstr "Vrh desno"
+
+#: ui/OnScreenDisplayPositionSelector.qml:95
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-left"
+msgstr "Center levo"
+
+#: ui/OnScreenDisplayPositionSelector.qml:100
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center"
+msgstr "V sredini"
+
+#: ui/OnScreenDisplayPositionSelector.qml:105
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-right"
+msgstr "Center desno"
+
+#: ui/OnScreenDisplayPositionSelector.qml:110
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-left"
+msgstr "Dno levo"
+
+#: ui/OnScreenDisplayPositionSelector.qml:115
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-center"
+msgstr "Dno center"
+
+#: ui/OnScreenDisplayPositionSelector.qml:120
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-right"
+msgstr "Dno desno"
+
+#: ui/OnScreenDisplayPositionSelector.qml:141
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Lower center"
+msgstr "Spodaj na sredini"
 
 #: ui/TitlebarActions.qml:20 ui/TitlebarActions.qml:33 ui/WindowActions.qml:31
 #, kde-format
@@ -638,6 +705,9 @@ msgstr "Srednji klik:"
 #, kde-format
 msgid "Mo&use wheel:"
 msgstr "Miškin kolešček:"
+
+#~ msgid "Open in screen corner:"
+#~ msgstr "Odpri v kotu zaslona:"
 
 #~ msgid ""
 #~ "In this row you can customize left click behavior when clicking into an "

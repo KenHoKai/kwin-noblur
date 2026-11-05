@@ -29,6 +29,7 @@ namespace KWin
 
 ItemRendererOpenGL::ItemRendererOpenGL(RenderDevice *device)
     : ItemRenderer(device)
+    , m_context(device->eglContext())
 {
     const QString visualizeOptionsString = qEnvironmentVariable("KWIN_SCENE_VISUALIZE");
     if (!visualizeOptionsString.isEmpty()) {
@@ -46,12 +47,12 @@ std::unique_ptr<Texture> ItemRendererOpenGL::createTexture(GraphicsBuffer *buffe
 
 std::unique_ptr<Texture> ItemRendererOpenGL::createTexture(const QImage &image)
 {
-    return ImageTextureOpenGL::create(m_renderDevice->eglContext(), image);
+    return ImageTextureOpenGL::create(m_context, image);
 }
 
 std::unique_ptr<NinePatch> ItemRendererOpenGL::createNinePatch(const QImage &image)
 {
-    return NinePatchOpenGL::create(m_renderDevice->eglContext(), image);
+    return NinePatchOpenGL::create(m_context, image);
 }
 
 std::unique_ptr<NinePatch> ItemRendererOpenGL::createNinePatch(const QImage &topLeftPatch,
@@ -63,26 +64,30 @@ std::unique_ptr<NinePatch> ItemRendererOpenGL::createNinePatch(const QImage &top
                                                                const QImage &bottomLeftPatch,
                                                                const QImage &leftPatch)
 {
-    return NinePatchOpenGL::create(m_renderDevice->eglContext(), topLeftPatch, topPatch, topRightPatch, rightPatch, bottomRightPatch, bottomPatch, bottomLeftPatch, leftPatch);
+    return NinePatchOpenGL::create(m_context, topLeftPatch, topPatch, topRightPatch, rightPatch, bottomRightPatch, bottomPatch, bottomLeftPatch, leftPatch);
 }
 
 std::unique_ptr<Atlas> ItemRendererOpenGL::createAtlas(const QList<QImage> &sprites)
 {
-    return AtlasOpenGL::create(m_renderDevice->eglContext(), sprites);
+    return AtlasOpenGL::create(m_context, sprites);
 }
 
-void ItemRendererOpenGL::beginFrame(const RenderTarget &renderTarget, const RenderViewport &viewport)
+bool ItemRendererOpenGL::beginFrame(const RenderTarget &renderTarget, const RenderViewport &viewport)
 {
+    if (!m_context || !m_context->makeCurrent()) {
+        return false;
+    }
     GLFramebuffer *fbo = renderTarget.framebuffer();
-    GLFramebuffer::pushFramebuffer(fbo);
+    m_context->pushFramebuffer(fbo);
 
-    GLVertexBuffer::streamingBuffer()->beginFrame();
+    m_context->streamingVbo()->beginFrame();
+    return true;
 }
 
 void ItemRendererOpenGL::endFrame()
 {
-    GLVertexBuffer::streamingBuffer()->endOfFrame();
-    GLFramebuffer::popFramebuffer();
+    m_context->streamingVbo()->endOfFrame();
+    m_context->popFramebuffer();
 
     EGLNativeFence fence(m_renderDevice->eglDisplay());
     if (fence.isValid()) {
@@ -112,97 +117,30 @@ void ItemRendererOpenGL::setBlendEnabled(bool enabled)
     m_blendingEnabled = enabled;
 }
 
-static RenderGeometry clipQuads(ItemRenderer *renderer, const Item *item, const ItemRendererOpenGL::RenderContext *context)
+static RenderGeometry createGeometry(ItemRenderer *renderer, const Item *item, const ItemRendererOpenGL::RenderContext *context)
 {
     const WindowQuadList quads = item->quads(renderer);
-
-    const qreal scale = context->renderTargetScale;
-    const QPointF itemToDeviceTranslation = context->transformStack.top().map(QPointF(0., 0.))
-        - context->viewportOrigin
-        + context->renderOffset;
 
     RenderGeometry geometry;
     geometry.reserve(quads.count() * 6);
 
-    // split all quads in bounding rect with the actual rects in the region
     for (const WindowQuad &quad : std::as_const(quads)) {
-        if (context->deviceClip != Region::infinite() && !context->hardwareClipping) {
-            // Scale to device coordinates, rounding as needed.
-            const RectF deviceBounds = quad.bounds().scaled(scale).rounded();
-
-            for (const Rect &deviceClipRect : context->deviceClip.rects()) {
-                const RectF relativeDeviceClipRect = RectF(deviceClipRect).translated(-itemToDeviceTranslation);
-                const RectF intersected = relativeDeviceClipRect.intersected(deviceBounds);
-                if (intersected.isValid()) {
-                    if (deviceBounds == intersected) {
-                        // case 1: completely contains, include and do not check other rects
-                        geometry.appendWindowQuad(quad, scale);
-                        break;
-                    }
-                    // case 2: intersection
-                    geometry.appendSubQuad(quad, intersected, scale);
-                }
-            }
-        } else {
-            geometry.appendWindowQuad(quad, scale);
-        }
+        geometry.appendWindowQuad(quad, context->renderTargetScale);
     }
 
     return geometry;
 }
 
-bool ItemRendererOpenGL::createRenderNode(Item *item, RenderContext *context, const std::function<bool(Item *)> &filter, const std::function<bool(Item *)> &holeFilter)
+bool ItemRendererOpenGL::maybeCreateSingleRenderNode(Item *item, RenderContext *context, bool hole)
 {
-    bool hole = false;
-    if (filter && filter(item)) {
-        if (!holeFilter || !holeFilter(item)) {
-            return true;
-        }
-        hole = true;
+    const Rect deviceBounds = RectF(context->transformStack.top().mapRect(item->rect().scaled(context->renderTargetScale)))
+                                  .translated(context->renderOffset - context->viewportOrigin)
+                                  .rounded();
+    if (deviceBounds.isEmpty()) {
+        return true;
     }
-    const QList<Item *> sortedChildItems = item->sortedChildItems();
-
-    const auto logicalPosition = QVector2D(item->position().x(), item->position().y());
-    const auto scale = context->renderTargetScale;
-
-    QMatrix4x4 matrix;
-    matrix.translate(roundVector(logicalPosition * scale).toVector3D());
-    if (context->transformStack.size() == 1) {
-        matrix *= context->rootTransform;
-    }
-    if (!item->transform().isIdentity()) {
-        matrix.scale(scale, scale);
-        matrix *= item->transform();
-        matrix.scale(1 / scale, 1 / scale);
-    }
-    context->transformStack.push(context->transformStack.top() * matrix);
-
-    context->opacityStack.push(context->opacityStack.top() * item->opacity());
-
-    for (Item *childItem : sortedChildItems) {
-        if (childItem->z() >= 0) {
-            break;
-        }
-        if (childItem->explicitVisible()) {
-            if (!createRenderNode(childItem, context, filter, holeFilter)) {
-                return false;
-            }
-        }
-    }
-
-    if (const BorderRadius radius = item->borderRadius(); !radius.isNull()) {
-        const RectF nativeRect = item->rect().scaled(context->renderTargetScale).rounded();
-        const BorderRadius nativeRadius = radius.scaled(context->renderTargetScale).rounded();
-        context->cornerStack.push({
-            .box = nativeRect,
-            .radius = nativeRadius,
-        });
-    } else if (!context->cornerStack.isEmpty()) {
-        const auto &top = std::as_const(context->cornerStack).top();
-        context->cornerStack.push({
-            .box = matrix.inverted().mapRect(top.box),
-            .radius = top.radius,
-        });
+    if (!context->deviceClip.intersects(deviceBounds)) {
+        return true;
     }
 
     // For multi-gpu copies, preprocess may change the active EGL context,
@@ -212,7 +150,7 @@ bool ItemRendererOpenGL::createRenderNode(Item *item, RenderContext *context, co
         return false;
     }
 
-    RenderGeometry geometry = clipQuads(this, item, context);
+    RenderGeometry geometry = createGeometry(this, item, context);
 
     if (auto shadowItem = qobject_cast<ShadowItem *>(item)) {
         if (!geometry.isEmpty()) {
@@ -335,6 +273,66 @@ bool ItemRendererOpenGL::createRenderNode(Item *item, RenderContext *context, co
             });
         }
     }
+    return true;
+}
+
+bool ItemRendererOpenGL::createRenderNode(Item *item, RenderContext *context, const std::function<bool(Item *)> &filter, const std::function<bool(Item *)> &holeFilter)
+{
+    bool hole = false;
+    if (filter && filter(item)) {
+        if (!holeFilter || !holeFilter(item)) {
+            return true;
+        }
+        hole = true;
+    }
+    const QList<Item *> sortedChildItems = item->sortedChildItems();
+
+    const auto logicalPosition = QVector2D(item->position().x(), item->position().y());
+    const auto scale = context->renderTargetScale;
+
+    QMatrix4x4 matrix;
+    matrix.translate(roundVector(logicalPosition * scale).toVector3D());
+    if (context->transformStack.size() == 1) {
+        matrix *= context->rootTransform;
+    }
+    if (!item->transform().isIdentity()) {
+        matrix.scale(scale, scale);
+        matrix *= item->transform();
+        matrix.scale(1 / scale, 1 / scale);
+    }
+    context->transformStack.push(context->transformStack.top() * matrix);
+
+    context->opacityStack.push(context->opacityStack.top() * item->opacity());
+
+    for (Item *childItem : sortedChildItems) {
+        if (childItem->z() >= 0) {
+            break;
+        }
+        if (childItem->explicitVisible()) {
+            if (!createRenderNode(childItem, context, filter, holeFilter)) {
+                return false;
+            }
+        }
+    }
+
+    if (const BorderRadius radius = item->borderRadius(); !radius.isNull()) {
+        const RectF nativeRect = item->rect().scaled(context->renderTargetScale).rounded();
+        const BorderRadius nativeRadius = radius.scaled(context->renderTargetScale).rounded();
+        context->cornerStack.push({
+            .box = nativeRect,
+            .radius = nativeRadius,
+        });
+    } else if (!context->cornerStack.isEmpty()) {
+        const auto &top = std::as_const(context->cornerStack).top();
+        context->cornerStack.push({
+            .box = matrix.inverted().mapRect(top.box),
+            .radius = top.radius,
+        });
+    }
+
+    if (!maybeCreateSingleRenderNode(item, context, hole)) {
+        return false;
+    }
 
     for (Item *childItem : sortedChildItems) {
         if (childItem->z() < 0) {
@@ -358,22 +356,15 @@ bool ItemRendererOpenGL::createRenderNode(Item *item, RenderContext *context, co
 void ItemRendererOpenGL::renderBackground(const RenderTarget &renderTarget, const RenderViewport &viewport, const Region &deviceRegion)
 {
     const auto clipped = deviceRegion & renderTarget.transformedRect();
-    if (clipped == renderTarget.transformedRect()) {
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-    } else if (!clipped.isEmpty()) {
-        glClearColor(0, 0, 0, 0);
-        glEnable(GL_SCISSOR_TEST);
-
-        const auto targetSize = renderTarget.size();
-        for (const Rect &deviceRect : clipped.rects()) {
-            const auto bufferRect = viewport.transform().map(deviceRect, renderTarget.transformedSize());
-            glScissor(bufferRect.x(), targetSize.height() - (bufferRect.y() + bufferRect.height()), bufferRect.width(), bufferRect.height());
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
-
-        glDisable(GL_SCISSOR_TEST);
+    if (clipped.isEmpty()) {
+        return;
     }
+    const auto bufferRect = viewport.transform().map(clipped, renderTarget.transformedSize());
+
+    glClearColor(0, 0, 0, 0);
+    EglContext::currentContext()->renderRegion(bufferRect, [&]() {
+        glClear(GL_COLOR_BUFFER_BIT);
+    });
 }
 
 bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const RenderViewport &viewport, Item *item, int mask, const Region &deviceRegion, const WindowPaintData &data, const std::function<bool(Item *)> &filter, const std::function<bool(Item *)> &holeFilter)
@@ -385,8 +376,7 @@ bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const Rend
     RenderContext renderContext{
         .projectionMatrix = viewport.projectionMatrix(),
         .rootTransform = data.toMatrix(viewport.scale()), // TODO: unify transforms
-        .deviceClip = (deviceRegion & renderTarget.transformedRect()),
-        .hardwareClipping = (deviceRegion != Region::infinite() && ((mask & Scene::PAINT_WINDOW_TRANSFORMED) || (mask & Scene::PAINT_SCREEN_TRANSFORMED))) || !viewport.renderOffset().isNull(),
+        .deviceClip = deviceRegion & renderTarget.transformedRect(),
         .renderTargetScale = viewport.scale(),
         .viewportOrigin = viewport.scaledRenderRect().topLeft(),
         .renderOffset = viewport.renderOffset(),
@@ -428,19 +418,13 @@ bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const Rend
     vbo->unmap();
     vbo->bindArrays();
 
-    if (renderContext.hardwareClipping) {
-        glEnable(GL_SCISSOR_TEST);
-    }
-
     // Make sure the blend function is set up correctly in case we will be doing blending
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // The scissor region must be in the render target local coordinate system.
     const QSize bufferOffset = renderTarget.transform().map(QSize(viewport.renderOffset().x(), viewport.renderOffset().y()));
-    Region scissorRegion = Rect(QPoint(bufferOffset.width(), bufferOffset.height()), renderTarget.size() - 2 * bufferOffset);
-    if (renderContext.hardwareClipping) {
-        scissorRegion &= viewport.transform().map(deviceRegion & renderTarget.transformedRect(), renderTarget.transformedSize());
-    }
+    const Rect offsetClip = Rect(QPoint(bufferOffset.width(), bufferOffset.height()), renderTarget.size() - 2 * bufferOffset);
+    const Region scissorRegion = viewport.transform().map(deviceRegion & renderTarget.transformedRect(), renderTarget.transformedSize()) & offsetClip;
 
     ShaderTraits lastTraits;
     GLShader *shader = nullptr;
@@ -522,8 +506,7 @@ bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const Rend
             renderNode.texture->bind();
         }
 
-        vbo->draw(scissorRegion, GL_TRIANGLES, renderNode.firstVertex,
-                  renderNode.vertexCount, renderContext.hardwareClipping);
+        vbo->draw(scissorRegion, GL_TRIANGLES, renderNode.firstVertex, renderNode.vertexCount);
 
         if (renderNode.texture && !renderNode.paintHole) {
             glActiveTexture(GL_TEXTURE0);
@@ -556,8 +539,7 @@ bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const Rend
             } else {
                 shader->setUniform(GLShader::ColorUniform::Color, QColor(255, 0, 0, 50));
             }
-            vbo->draw(scissorRegion, GL_TRIANGLES, renderNode.firstVertex,
-                      renderNode.vertexCount, renderContext.hardwareClipping);
+            vbo->draw(scissorRegion, GL_TRIANGLES, renderNode.firstVertex, renderNode.vertexCount);
         }
     }
     if (shader) {
@@ -574,9 +556,6 @@ bool ItemRendererOpenGL::renderItem(const RenderTarget &renderTarget, const Rend
 
     setBlendEnabled(false);
 
-    if (renderContext.hardwareClipping) {
-        glDisable(GL_SCISSOR_TEST);
-    }
     return true;
 }
 
@@ -614,8 +593,7 @@ void ItemRendererOpenGL::visualizeFractional(const RenderViewport &viewport, con
         m_debug.fractionalShader->setUniform("geometrySize", size);
         m_debug.fractionalShader->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, renderContext.projectionMatrix * renderNode.transformMatrix);
 
-        vbo->draw(logicalRegion, GL_TRIANGLES, renderNode.firstVertex,
-                  renderNode.vertexCount, renderContext.hardwareClipping);
+        vbo->draw(logicalRegion, GL_TRIANGLES, renderNode.firstVertex, renderNode.vertexCount);
     }
 }
 

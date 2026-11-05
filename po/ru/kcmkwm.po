@@ -18,9 +18,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kcmkwm\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-07-14 00:45+0000\n"
-"PO-Revision-Date: 2026-09-06 19:26+0200\n"
-"Last-Translator: Alexander Yavorskiy <kekcuha@gmail.com>\n"
+"POT-Creation-Date: 2026-11-03 00:56+0000\n"
+"PO-Revision-Date: 2026-11-03 07:44+0200\n"
+"Last-Translator: Alexander Yavorsky <kekcuha@gmail.com>\n"
 "Language-Team: Russian <kde-russian@lists.kde.ru>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -240,14 +240,14 @@ msgid "Screen &edge snap zone:"
 msgstr "Зона привязки &границ:"
 
 #: ui/MovementAndPlacement.qml:30 ui/MovementAndPlacement.qml:58
-#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:183
+#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:199
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "%1 px"
 msgstr "%1 пикс."
 
 #: ui/MovementAndPlacement.qml:34 ui/MovementAndPlacement.qml:62
-#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:187
+#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:203
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "px"
@@ -317,38 +317,105 @@ msgstr "Под мышью"
 #: ui/MovementAndPlacement.qml:149
 #, kde-format
 msgctxt "@title:group"
-msgid "Picture-in-picture Placement"
-msgstr "Размещение «картинки в картинке»"
+msgid "Overlay Positioning"
+msgstr "Расположение экранных элементов"
 
 #: ui/MovementAndPlacement.qml:152
 #, kde-format
-msgid "Open in screen corner:"
-msgstr "Выбор угла экрана:"
+msgctxt "@label:chooser"
+msgid "OSD popups:"
+msgstr "Экранные уведомления:"
 
-#: ui/MovementAndPlacement.qml:157
+#: ui/MovementAndPlacement.qml:167
+#, kde-format
+msgctxt "@label:chooser"
+msgid "Picture-in-picture:"
+msgstr "«Картинка в картинке»:"
+
+#: ui/MovementAndPlacement.qml:172
 #, kde-format
 msgid "Top-left"
 msgstr "Верхний левый угол"
 
-#: ui/MovementAndPlacement.qml:158
+#: ui/MovementAndPlacement.qml:173
 #, kde-format
 msgid "Top-right"
 msgstr "Верхний правый угол"
 
-#: ui/MovementAndPlacement.qml:159
+#: ui/MovementAndPlacement.qml:174
 #, kde-format
 msgid "Bottom-left"
 msgstr "Нижний левый угол"
 
-#: ui/MovementAndPlacement.qml:160
+#: ui/MovementAndPlacement.qml:175
 #, kde-format
 msgid "Bottom-right"
 msgstr "Нижний правый угол"
 
-#: ui/MovementAndPlacement.qml:173
+#: ui/MovementAndPlacement.qml:189
 #, kde-format
 msgid "Margin:"
 msgstr "Отступ:"
+
+#: ui/OnScreenDisplayPositionSelector.qml:80
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-left"
+msgstr "Верхний левый угол"
+
+#: ui/OnScreenDisplayPositionSelector.qml:85
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-center"
+msgstr "Сверху по центру"
+
+#: ui/OnScreenDisplayPositionSelector.qml:90
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-right"
+msgstr "Верхний правый угол"
+
+#: ui/OnScreenDisplayPositionSelector.qml:95
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-left"
+msgstr "Слева по центру"
+
+#: ui/OnScreenDisplayPositionSelector.qml:100
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center"
+msgstr "По центру"
+
+#: ui/OnScreenDisplayPositionSelector.qml:105
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-right"
+msgstr "Справа по центру"
+
+#: ui/OnScreenDisplayPositionSelector.qml:110
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-left"
+msgstr "Нижний левый угол"
+
+#: ui/OnScreenDisplayPositionSelector.qml:115
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-center"
+msgstr "Снизу по центру"
+
+#: ui/OnScreenDisplayPositionSelector.qml:120
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-right"
+msgstr "Нижний правый угол"
+
+#: ui/OnScreenDisplayPositionSelector.qml:141
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Lower center"
+msgstr "Ниже центра"
 
 #: ui/TitlebarActions.qml:20 ui/TitlebarActions.qml:33 ui/WindowActions.qml:31
 #, kde-format
@@ -646,6 +713,9 @@ msgstr "Щелчок с&редней кнопкой:"
 #, kde-format
 msgid "Mo&use wheel:"
 msgstr "К&олесо мыши:"
+
+#~ msgid "Open in screen corner:"
+#~ msgstr "Выбор угла экрана:"
 
 #~ msgid ""
 #~ "In this row you can customize left click behavior when clicking into an "

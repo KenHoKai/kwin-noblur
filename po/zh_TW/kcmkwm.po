@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kcmkwm\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2026-07-14 00:45+0000\n"
-"PO-Revision-Date: 2026-08-04 08:05+0900\n"
+"POT-Creation-Date: 2026-11-03 00:56+0000\n"
+"PO-Revision-Date: 2026-11-03 21:08+0900\n"
 "Last-Translator: Kisaragi Hiu <mail@kisaragi-hiu.com>\n"
 "Language-Team: Traditional Chinese <zh-l10n@lists.slat.org>\n"
 "Language: zh_TW\n"
@@ -226,14 +226,14 @@ msgid "Screen &edge snap zone:"
 msgstr "螢幕邊緣貼齊區域(&E)："
 
 #: ui/MovementAndPlacement.qml:30 ui/MovementAndPlacement.qml:58
-#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:183
+#: ui/MovementAndPlacement.qml:87 ui/MovementAndPlacement.qml:199
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "%1 px"
 msgstr "%1 像素"
 
 #: ui/MovementAndPlacement.qml:34 ui/MovementAndPlacement.qml:62
-#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:187
+#: ui/MovementAndPlacement.qml:91 ui/MovementAndPlacement.qml:203
 #, kde-format
 msgctxt "short for pixel(s)"
 msgid "px"
@@ -303,38 +303,105 @@ msgstr "游標下"
 #: ui/MovementAndPlacement.qml:149
 #, kde-format
 msgctxt "@title:group"
-msgid "Picture-in-picture Placement"
-msgstr "子母畫面放置方式"
+msgid "Overlay Positioning"
+msgstr "覆蓋定位方式"
 
 #: ui/MovementAndPlacement.qml:152
 #, kde-format
-msgid "Open in screen corner:"
-msgstr "開啟於螢幕角落："
+msgctxt "@label:chooser"
+msgid "OSD popups:"
+msgstr "螢幕彈出顯示："
 
-#: ui/MovementAndPlacement.qml:157
+#: ui/MovementAndPlacement.qml:167
+#, kde-format
+msgctxt "@label:chooser"
+msgid "Picture-in-picture:"
+msgstr "子母畫面："
+
+#: ui/MovementAndPlacement.qml:172
 #, kde-format
 msgid "Top-left"
 msgstr "左上角"
 
-#: ui/MovementAndPlacement.qml:158
+#: ui/MovementAndPlacement.qml:173
 #, kde-format
 msgid "Top-right"
 msgstr "右上角"
 
-#: ui/MovementAndPlacement.qml:159
+#: ui/MovementAndPlacement.qml:174
 #, kde-format
 msgid "Bottom-left"
 msgstr "左下角"
 
-#: ui/MovementAndPlacement.qml:160
+#: ui/MovementAndPlacement.qml:175
 #, kde-format
 msgid "Bottom-right"
 msgstr "右下角"
 
-#: ui/MovementAndPlacement.qml:173
+#: ui/MovementAndPlacement.qml:189
 #, kde-format
 msgid "Margin:"
 msgstr "邊界："
+
+#: ui/OnScreenDisplayPositionSelector.qml:80
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-left"
+msgstr "左上角"
+
+#: ui/OnScreenDisplayPositionSelector.qml:85
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-center"
+msgstr "頂端中央"
+
+#: ui/OnScreenDisplayPositionSelector.qml:90
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Top-right"
+msgstr "右上角"
+
+#: ui/OnScreenDisplayPositionSelector.qml:95
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-left"
+msgstr "中左"
+
+#: ui/OnScreenDisplayPositionSelector.qml:100
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center"
+msgstr "中央"
+
+#: ui/OnScreenDisplayPositionSelector.qml:105
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Center-right"
+msgstr "中右"
+
+#: ui/OnScreenDisplayPositionSelector.qml:110
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-left"
+msgstr "左下角"
+
+#: ui/OnScreenDisplayPositionSelector.qml:115
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-center"
+msgstr "底端中央"
+
+#: ui/OnScreenDisplayPositionSelector.qml:120
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Bottom-right"
+msgstr "右下角"
+
+#: ui/OnScreenDisplayPositionSelector.qml:141
+#, kde-format
+msgctxt "@option:radio Position of on-screen displays"
+msgid "Lower center"
+msgstr "底部中央"
 
 #: ui/TitlebarActions.qml:20 ui/TitlebarActions.qml:33 ui/WindowActions.qml:31
 #, kde-format
@@ -634,6 +701,9 @@ msgstr "中鍵(&C)："
 #, kde-format
 msgid "Mo&use wheel:"
 msgstr "滑鼠滾輪(&U)："
+
+#~ msgid "Open in screen corner:"
+#~ msgstr "開啟於螢幕角落："
 
 #~ msgid ""
 #~ "In this row you can customize left click behavior when clicking into an "
